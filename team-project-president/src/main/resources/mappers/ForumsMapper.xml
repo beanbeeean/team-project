@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.springboot.president.domain.forums.ForumsRepository">
+	<insert id="insertForums" parameterType="com.springboot.president.domain.forums.Forums">
+		INSERT INTO
+			forums_mst
+		VALUES(
+			0,
+			#{user_id},
+			#{topic},
+			#{content},
+			0,
+			0,
+			0,
+			NOW(),
+			DATE_ADD(NOW(),INTERVAL 30 DAY)
+		
+		);
+	
+	</insert>
+
+	<select id="getForumsAll" resultType="com.springboot.president.domain.forums.GetForums">
+		SELECT
+			um.provider,
+			fm.forums_id,
+			fm.user_id,
+			fm.topic,
+			fm.content,
+			fm.good_count,
+			fm.bad_count,
+			fm.create_date
+		FROM
+			forums_mst fm
+			LEFT OUTER JOIN user_mst um ON(um.id = fm.user_id)
+		WHERE
+			end_date >= CURDATE()
+		ORDER BY
+			create_date DESC;
+		
+	</select>
+	
+	<select id="getBestForumsByAgreeCountWeeklyFirst" resultType="com.springboot.president.domain.forums.GetForums" parameterType="String">
+		SELECT
+			um.provider,
+			fm.forums_id,
+			fm.user_id,
+			fm.topic,
+			fm.content,
+			fm.good_count,
+			fm.bad_count,
+			fm.create_date,
+			fm.reply_count
+		FROM
+			forums_mst fm
+			LEFT OUTER JOIN user_mst um ON(um.id = fm.user_id)
+		WHERE
+			fm.create_date BETWEEN #{endDate} AND #{startDate}
+		ORDER BY
+			fm.good_count DESC
+		LIMIT
+			5;
+		
+	</select>
+	
+	<select id="getBestForumsByReplyCount" resultType="com.springboot.president.domain.forums.GetForums" parameterType="String">
+		SELECT
+			um.provider,
+			fm.forums_id,
+			fm.user_id,
+			fm.topic,
+			fm.content,
+			fm.good_count,
+			fm.bad_count,
+			fm.create_date,
+			fm.reply_count
+		FROM
+			forums_mst fm
+			LEFT OUTER JOIN user_mst um ON(um.id = fm.user_id)
+		where
+			fm.create_date BETWEEN #{endDate} AND #{startDate}
+		ORDER BY
+			fm.reply_count DESC
+		LIMIT 
+			5;
+	</select>
+	
+	<select id="getForumsByForumsId" resultType="com.springboot.president.domain.forums.GetForums">
+		SELECT
+			um.provider,
+			fm.forums_id,
+			fm.user_id,
+			fm.topic,
+			fm.content,
+			fm.good_count,
+			fm.bad_count,
+			fm.reply_count,
+			fm.create_date
+		FROM
+			forums_mst fm
+			LEFT OUTER JOIN user_mst um ON(um.id = fm.user_id)
+		WHERE
+			fm.forums_id = #{forums_id};
+		
+	</select>
+
+	<insert id="insertForumsReply" parameterType="com.springboot.president.domain.forums.ReplyForums">
+		INSERT INTO
+			forums_board_mst
+		VALUES(
+			0,
+			#{forums_id},
+			#{user_id},			
+			#{reply},
+			0,
+			0,
+			0,
+			NOW()
+		
+		);
+	
+	</insert>
+	
+	<select id="getReplyByForumsId" parameterType="Integer" resultType="com.springboot.president.domain.forums.GetForumsReply">
+		SELECT
+			*
+		FROM
+			forums_board_mst
+		WHERE
+			forums_id = #{forums_id}
+		ORDER BY
+			create_date DESC;
+		
+	</select>
+	<select id="forumsSelectCheck" parameterType="com.springboot.president.domain.forums.ForumsSelection" resultType="Integer">
+		SELECT
+			COUNT(user_id)
+		FROM 
+			forums_select_mst
+		WHERE
+			forums_id = #{forums_id}
+			and
+			user_id = #{user_id};
+			
+	</select>
+	
+		<insert id="insertReplyReply" parameterType="com.springboot.president.domain.forums.ReplyForums">
+		INSERT INTO
+			forums_re_reply_mst
+		VALUES(
+			0,
+			#{user_id},	
+			#{reply_id},	
+			#{comment}
+		
+		
+		);
+	
+	</insert>
+	
+	<insert id="forumsAgree" parameterType="com.springboot.president.domain.forums.ForumsSelection">
+		INSERT INTO
+			forums_select_mst
+		VALUES(
+			0,
+			#{forums_id},
+			#{user_id},
+			1
+		);
+	
+	</insert>
+	<insert id="forumsAginst" parameterType="com.springboot.president.domain.forums.ForumsSelection">
+		INSERT INTO
+			forums_select_mst
+		VALUES(
+			0,
+			#{forums_id},
+			#{user_id},
+			2
+		);
+	
+	</insert>
+</mapper>
